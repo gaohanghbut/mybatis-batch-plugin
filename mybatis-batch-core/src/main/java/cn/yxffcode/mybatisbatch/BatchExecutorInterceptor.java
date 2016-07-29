@@ -41,7 +41,7 @@ public class BatchExecutorInterceptor implements Interceptor {
       return invocation.proceed();
     }
 
-    Map<String, Object> paramMap = (Map<String, Object>) invocation.getArgs()[1];
+    final Map<String, Object> paramMap = (Map<String, Object>) invocation.getArgs()[1];
 
     final MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
     final String statementId = ms.getId();

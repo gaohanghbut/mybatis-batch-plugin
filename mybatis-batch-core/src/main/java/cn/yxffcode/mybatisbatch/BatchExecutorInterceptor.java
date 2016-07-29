@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * 方便使用的批量更新插件,只需要sql statement id以batch开头,参数为Iterable或者数组即可
+ *
  * @author gaohang on 16/7/29.
  */
 @Intercepts({
@@ -53,11 +55,11 @@ public class BatchExecutorInterceptor implements Interceptor {
     final Executor targetExecutor = getTargetExecutor(invocation);
     final Configuration configuration = (Configuration) Reflections.getField("configuration", targetExecutor);
 
-    BatchExecutor batchExecutor = new BatchExecutor(configuration, targetExecutor.getTransaction());
+    final BatchExecutor batchExecutor = new BatchExecutor(configuration, targetExecutor.getTransaction());
 
-    Object params = paramMap.get("param1");
+    final Object params = paramMap.get("param1");
 
-    Iterable<?> paramIterable = toIterable(params);
+    final Iterable<?> paramIterable = toIterable(params);
     try {
       for (Object obj : paramIterable) {
         batchExecutor.doUpdate(ms, obj);

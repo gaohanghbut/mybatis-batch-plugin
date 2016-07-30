@@ -25,7 +25,10 @@ public class BatchExecutorWrapper extends BatchExecutor {
   public int update(MappedStatement ms, Object parameter) throws SQLException {
 
     final Map<String, Object> paramMap = (Map<String, Object>) parameter;
-    final Object params = paramMap.get("param1");
+    if (paramMap == null || paramMap.size() != 1) {
+      return super.update(ms, parameter);
+    }
+    final Object params = paramMap.values().iterator().next();
 
     final Iterable<?> paramIterable = toIterable(params);
     try {

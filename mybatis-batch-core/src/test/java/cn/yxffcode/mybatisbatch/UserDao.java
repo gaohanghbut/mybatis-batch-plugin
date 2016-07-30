@@ -15,7 +15,7 @@ public interface UserDao {
 
   @Insert({
           "insert into user (id, name) values (#{id}, #{name})"
-  }) int batchInsert(@Param("users") List<User> users);
+  }) int batchInsert(List<User> users);
 
   @Select({
           "select id, name from user"

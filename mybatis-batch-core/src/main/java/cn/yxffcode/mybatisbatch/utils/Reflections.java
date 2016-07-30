@@ -11,30 +11,6 @@ public final class Reflections {
   private Reflections() {
   }
 
-  public static <T> T defaultConstruct(Class<T> type) {
-    try {
-      return type.newInstance();
-    } catch (Exception e) {
-      Throwables.propagate(e);
-      return null;
-    }
-  }
-
-  public static void setField(Object target, String field, Object value) {
-    Field ss = findField(target.getClass(), field);
-    ss.setAccessible(true);
-    setField(ss, target, value);
-  }
-
-  public static void setField(Field field, Object target, Object value) {
-    try {
-      field.set(target, value);
-    } catch (IllegalAccessException ex) {
-      throw new IllegalStateException("Unexpected reflection exception - " + ex.getClass()
-              .getName() + ": " + ex.getMessage(), ex);
-    }
-  }
-
   private static Field findField(Class<?> clazz, String name) {
     return findField(clazz, name, null);
   }
@@ -59,7 +35,6 @@ public final class Reflections {
     if (!field.isAccessible()) {
       field.setAccessible(true);
     }
-    // FIXME: 16/1/3 whether to set accessible to false
     try {
       return field.get(target);
     } catch (IllegalAccessException ex) {

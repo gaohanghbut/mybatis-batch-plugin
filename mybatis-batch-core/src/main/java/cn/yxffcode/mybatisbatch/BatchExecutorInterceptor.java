@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * 方便使用的批量更新插件,只需要sql statement id以batch开头,参数为Iterable或者数组即可
+ * 方便使用的批量更新插件,只需要sql statement id以batch开头,参数为Iterable或者数组即可.
+ * <p>
+ * 限制:最好是作为第一个拦截器使用
  *
  * @author gaohang on 16/7/29.
  */
@@ -35,19 +37,17 @@ public class BatchExecutorInterceptor implements Interceptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BatchExecutorInterceptor.class);
 
-  @Override public Object intercept(final Invocation invocation) throws Throwable {
+  @Override
+  public Object intercept(final Invocation invocation) throws Throwable {
     //check argument
     if (invocation.getArgs()[1] == null) {
       return invocation.proceed();
     }
 
-    final Map<String, Object> paramMap = (Map<String, Object>) invocation.getArgs()[1];
-
     final MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
-    final String statementId = ms.getId();
 
     //if it should use batch
-    if (!shouldDoBatch(statementId)) {
+    if (!shouldDoBatch(ms.getId())) {
       return invocation.proceed();
     }
 
@@ -55,55 +55,8 @@ public class BatchExecutorInterceptor implements Interceptor {
     final Executor targetExecutor = getTargetExecutor(invocation);
     final Configuration configuration = (Configuration) Reflections.getField("configuration", targetExecutor);
 
-    final BatchExecutor batchExecutor = new BatchExecutor(configuration, targetExecutor.getTransaction());
-
-    final Object params = paramMap.get("param1");
-
-    final Iterable<?> paramIterable = toIterable(params);
-    try {
-      for (Object obj : paramIterable) {
-        batchExecutor.doUpdate(ms, obj);
-      }
-      List<BatchResult> batchResults = batchExecutor.doFlushStatements(false);
-      if (batchResults == null || batchResults.size() == 0) {
-        return 0;
-      }
-      return resolveUpdateResult(batchResults);
-    } catch (Exception e) {
-      batchExecutor.doFlushStatements(true);
-      Throwables.propagate(e);
-      return null;
-    }
-  }
-
-  private Iterable<?> toIterable(final Object params) {
-    if (params == null) {
-      return Collections.emptyList();
-    }
-    Iterable<?> paramIterable;
-    if (params instanceof Iterable) {
-      paramIterable = (Iterable<?>) params;
-    } else if (params.getClass().isArray()) {
-      Object[] array = (Object[]) params;
-      paramIterable = Arrays.asList(array);
-    } else {
-      paramIterable = Collections.emptyList();
-    }
-    return paramIterable;
-  }
-
-  private Object resolveUpdateResult(final List<BatchResult> batchResults) {
-    int result = 0;
-    for (BatchResult batchResult : batchResults) {
-      int[] updateCounts = batchResult.getUpdateCounts();
-      if (updateCounts == null || updateCounts.length == 0) {
-        continue;
-      }
-      for (int updateCount : updateCounts) {
-        result += updateCount;
-      }
-    }
-    return result;
+    final BatchExecutor batchExecutor = new BatchExecutorWrapper(configuration, targetExecutor.getTransaction());
+    return batchExecutor.doUpdate(ms, invocation.getArgs()[1]);
   }
 
   private Executor getTargetExecutor(final Invocation invocation) {
@@ -123,7 +76,8 @@ public class BatchExecutorInterceptor implements Interceptor {
     return statementId.startsWith("batch", statementId.lastIndexOf('.') + 1);
   }
 
-  @Override public Object plugin(final Object target) {
+  @Override
+  public Object plugin(final Object target) {
     if (!(target instanceof Executor)) {
       return target;
     }
@@ -134,6 +88,7 @@ public class BatchExecutorInterceptor implements Interceptor {
     return Plugin.wrap(target, this);
   }
 
-  @Override public void setProperties(final Properties properties) {
+  @Override
+  public void setProperties(final Properties properties) {
   }
 }

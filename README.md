@@ -1,0 +1,3 @@
+# mybatis-batch-plugin
+mybatis已有的批量更新比较麻烦，要么写动态sql，要么利用BatchExecutor的SqlSession, 
+此插件基于BatchExecutor实现批量更新，只需要将需要更新的sql id以batch开头，参数需要是Iterable或者数组即可。

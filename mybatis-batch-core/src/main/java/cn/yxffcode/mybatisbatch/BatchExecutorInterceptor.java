@@ -56,7 +56,7 @@ public class BatchExecutorInterceptor implements Interceptor {
     final Configuration configuration = (Configuration) Reflections.getField("configuration", targetExecutor);
 
     final BatchExecutor batchExecutor = new BatchExecutorWrapper(configuration, targetExecutor.getTransaction());
-    return batchExecutor.doUpdate(ms, invocation.getArgs()[1]);
+    return batchExecutor.update(ms, invocation.getArgs()[1]);
   }
 
   private Executor getTargetExecutor(final Invocation invocation) {

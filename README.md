@@ -16,3 +16,7 @@ public interface UserDao {
   }) int batchInsert(List<User> users);
 }
 ```
+
+## 不足
+此插件的实现原理是拦截Executor的update方法,然后将目标方法的调用改为创建新的BatchExecutor,然后执行批量的更新,
+但新的BatchExecutor对象没有经过InterceptorChain的包装,所以在此插件之前的Executor拦截器不会被执行,所以最好是将此插件配置在第一个,

@@ -53,6 +53,9 @@ public class BatchExecutorInterceptor implements Interceptor {
 
     //create batch executor
     final Executor targetExecutor = getTargetExecutor(invocation);
+    if (targetExecutor instanceof BatchExecutor) {
+      return invocation.proceed();
+    }
     final Configuration configuration = (Configuration) Reflections.getField("configuration", targetExecutor);
 
     final BatchExecutor batchExecutor = new BatchExecutorWrapper(configuration, targetExecutor.getTransaction());

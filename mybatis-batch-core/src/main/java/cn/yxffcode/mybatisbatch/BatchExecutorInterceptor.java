@@ -1,5 +1,6 @@
 package cn.yxffcode.mybatisbatch;
 
+import cn.yxffcode.mybatisbatch.utils.BatchUtils;
 import cn.yxffcode.mybatisbatch.utils.Reflections;
 import org.apache.ibatis.executor.BatchExecutor;
 import org.apache.ibatis.executor.CachingExecutor;
@@ -42,7 +43,7 @@ public class BatchExecutorInterceptor implements Interceptor {
     final MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
 
     //if it should use batch
-    if (!shouldDoBatch(ms.getId())) {
+    if (!BatchUtils.shouldDoBatch(ms.getId())) {
       return invocation.proceed();
     }
 
@@ -59,8 +60,6 @@ public class BatchExecutorInterceptor implements Interceptor {
     } catch (SQLException e) {
       batchExecutor.flushStatements(true);
       throw e;
-    } finally {
-      batchExecutor.flushStatements(false);
     }
   }
 
@@ -75,10 +74,6 @@ public class BatchExecutorInterceptor implements Interceptor {
       targetExecutor = (Executor) Reflections.getField("delegate", targetExecutor);
     }
     return targetExecutor;
-  }
-
-  private boolean shouldDoBatch(final String statementId) {
-    return statementId.startsWith("batch", statementId.lastIndexOf('.') + 1);
   }
 
   @Override

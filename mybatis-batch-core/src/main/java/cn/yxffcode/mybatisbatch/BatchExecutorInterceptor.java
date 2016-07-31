@@ -53,7 +53,7 @@ public class BatchExecutorInterceptor implements Interceptor {
     }
     final Configuration configuration = (Configuration) Reflections.getField("configuration", targetExecutor);
 
-    final BatchExecutor batchExecutor = new BatchExecutorWrapper(configuration, targetExecutor.getTransaction());
+    final BatchExecutor batchExecutor = new BatchExecutorAdaptor(configuration, targetExecutor.getTransaction());
     try {
       return batchExecutor.update(ms, invocation.getArgs()[1]);
     } catch (SQLException e) {

@@ -16,8 +16,8 @@ import java.util.Map;
 /**
  * @author gaohang on 7/30/16.
  */
-final class BatchExecutorWrapper extends BatchExecutor {
-  public BatchExecutorWrapper(Configuration configuration, Transaction transaction) {
+final class BatchExecutorAdaptor extends BatchExecutor {
+  public BatchExecutorAdaptor(Configuration configuration, Transaction transaction) {
     super(configuration, transaction);
   }
 

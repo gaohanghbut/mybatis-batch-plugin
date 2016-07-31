@@ -1,9 +1,7 @@
 package cn.yxffcode.mybatisbatch;
 
 import cn.yxffcode.mybatisbatch.utils.Reflections;
-import com.google.common.base.Throwables;
 import org.apache.ibatis.executor.BatchExecutor;
-import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.executor.CachingExecutor;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -17,10 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -59,7 +54,14 @@ public class BatchExecutorInterceptor implements Interceptor {
     final Configuration configuration = (Configuration) Reflections.getField("configuration", targetExecutor);
 
     final BatchExecutor batchExecutor = new BatchExecutorWrapper(configuration, targetExecutor.getTransaction());
-    return batchExecutor.update(ms, invocation.getArgs()[1]);
+    try {
+      return batchExecutor.update(ms, invocation.getArgs()[1]);
+    } catch (SQLException e) {
+      batchExecutor.flushStatements(true);
+      throw e;
+    } finally {
+      batchExecutor.flushStatements(false);
+    }
   }
 
   private Executor getTargetExecutor(final Invocation invocation) {

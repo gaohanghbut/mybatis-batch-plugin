@@ -1,6 +1,12 @@
-# mybatis-batch-plugin
-mybatis已有的批量更新比较麻烦，要么写动态sql，要么利用BatchExecutor的SqlSession, 
+# mybatis-batch-plugin 
 此插件基于BatchExecutor实现批量更新，只需要将需要更新的sql id(不包含命名空间)以batch开头，参数需要是Iterable或者数组即可。
+
+## 实现目的 
+mybatis已有的批量更新比较麻烦，要么写动态sql，要么利用BatchExecutor的SqlSession.
+在工程中,更加希望DAO中的方法需要批量的时候用批量,不需要批量的时候不用批量.
+有两种方式实现,一种是实现自定义的Executor,它持有batch与非batch的两个Executor,在执行sql时自由切换,第二种实现方式则是通过mybatis
+插件实现,当需要使用批量时,不使用sqlsession中的executor,而是使用新的executor.
+第一种方式相对稍复杂一点,第二种方式需要将此插件配置成第一个Executor插件.
 
 ## 使用方式 
 mybatis配置 

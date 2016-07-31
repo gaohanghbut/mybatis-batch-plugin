@@ -23,7 +23,6 @@ final class BatchExecutorWrapper extends BatchExecutor {
 
   @Override
   public int update(MappedStatement ms, Object parameter) throws SQLException {
-
     if (parameter == null) {
       super.update(ms, parameter);
     }
@@ -31,15 +30,19 @@ final class BatchExecutorWrapper extends BatchExecutor {
     if (parameter instanceof Map) {
       final Map<String, Object> paramMap = (Map<String, Object>) parameter;
       if (paramMap == null || paramMap.size() != 1) {
-        return super.update(ms, parameter);
+        if (!paramMap.containsKey("param1")) {
+          return super.update(ms, parameter);
+        } else {
+          params = paramMap.get("param1");
+        }
+      } else {
+        params = paramMap.values().iterator().next();
       }
-      params = paramMap.values().iterator().next();
     } else if (parameter instanceof Iterable || parameter.getClass().isArray()) {
       params = parameter;
     } else {
       params = Collections.singletonList(parameter);
     }
-
     final Iterable<?> paramIterable = toIterable(params);
     try {
       for (Object obj : paramIterable) {

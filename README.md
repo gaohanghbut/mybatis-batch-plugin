@@ -13,7 +13,7 @@ mybatis已有的批量更新比较麻烦，要么写动态sql，要么利用Batc
 ```xml
 <plugin interceptor="cn.yxffcode.mybatisbatch.BatchExecutorInterceptor"></plugin>
 ```
-DAO如果需要使用batch,则sql的statement id(不包含命名空间)要以batch开头,如果是映射接口,则方法名以batch开头,参数需要是Iterable或者数组 
+DAO如果需要使用batch则,参数需要是Iterable或者数组,sql的statement id(不包含命名空间)要以batch开头,如果是映射接口,则方法名以batch开头 
 ```java
 public interface UserDao {
 
@@ -40,3 +40,6 @@ public interface UserDao {
 </bean>
 ```
 FlexSqlSessionFactoryBuilder会创建FlexSqlSessionFactory,它使用FlexExecutor对原始的Executor做包装
+
+### 使用方式
+除了配置之外,DAO代码的使用方式与插件相同,参数需要是Iterable或者数组,sql的statement id(不包含命名空间)要以batch开头如果是映射接口,则方法名以batch开头

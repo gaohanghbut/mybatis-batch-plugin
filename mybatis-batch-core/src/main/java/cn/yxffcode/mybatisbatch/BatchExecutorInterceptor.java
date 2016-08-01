@@ -20,7 +20,7 @@ import java.util.Properties;
 
 /**
  * 方便使用的批量更新插件,只需要sql statement id以batch开头,参数为Iterable或者数组即可.
- * <p>
+ * <p/>
  * 限制:最好是作为第一个拦截器使用,因为在它之前的拦截器不会被调用
  *
  * @author gaohang on 16/7/29.

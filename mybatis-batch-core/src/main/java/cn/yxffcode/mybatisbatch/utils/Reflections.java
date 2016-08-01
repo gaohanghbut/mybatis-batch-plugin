@@ -1,7 +1,5 @@
 package cn.yxffcode.mybatisbatch.utils;
 
-import com.google.common.base.Throwables;
-
 import java.lang.reflect.Field;
 
 /**

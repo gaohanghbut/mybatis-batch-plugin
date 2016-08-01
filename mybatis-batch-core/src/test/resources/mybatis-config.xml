@@ -3,11 +3,11 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-  <!--<plugins>-->
+    <!--<plugins>-->
     <!--<plugin interceptor="cn.yxffcode.mybatisbatch.BatchExecutorInterceptor"></plugin>-->
-  <!--</plugins>-->
-  <!-- 对事务的管理和连接池的配置 -->
-  <mappers>
-    <mapper class="cn.yxffcode.mybatisbatch.UserDao"/>
-  </mappers>
+    <!--</plugins>-->
+    <!-- 对事务的管理和连接池的配置 -->
+    <mappers>
+        <mapper class="cn.yxffcode.mybatisbatch.UserDao"/>
+    </mappers>
 </configuration>

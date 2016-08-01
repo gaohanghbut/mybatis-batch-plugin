@@ -9,8 +9,8 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
  */
 public class FlexSqlSessionFactoryBuilder extends SqlSessionFactoryBuilder {
 
-    public SqlSessionFactory build(Configuration config) {
-        return new FlexSqlSessionFactory(config);
-    }
+  public SqlSessionFactory build(Configuration config) {
+    return new FlexSqlSessionFactory(config);
+  }
 
 }

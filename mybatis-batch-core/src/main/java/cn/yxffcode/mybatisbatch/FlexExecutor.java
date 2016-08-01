@@ -2,6 +2,7 @@ package cn.yxffcode.mybatisbatch;
 
 import cn.yxffcode.mybatisbatch.collection.GroupList;
 import cn.yxffcode.mybatisbatch.utils.BatchUtils;
+import cn.yxffcode.mybatisbatch.utils.ExecutorUtils;
 import cn.yxffcode.mybatisbatch.utils.Reflections;
 import com.google.common.base.Throwables;
 import org.apache.ibatis.cache.CacheKey;
@@ -10,6 +11,7 @@ import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.plugin.InterceptorChain;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
@@ -29,10 +31,12 @@ import java.util.List;
 public class FlexExecutor implements Executor {
 
     private final Executor rawExecutor;
+    private final Configuration configuration;
     private BatchExecutorAdaptor batchExecutor;
 
-    public FlexExecutor(final Executor rawExecutor) {
+    public FlexExecutor(final Executor rawExecutor, final Configuration configuration) {
         this.rawExecutor = rawExecutor;
+        this.configuration = configuration;
     }
 
     @Override public int update(final MappedStatement ms, final Object parameter) throws SQLException {
@@ -40,10 +44,14 @@ public class FlexExecutor implements Executor {
             return rawExecutor.update(ms, parameter);
         }
         if (batchExecutor == null) {
+            final Executor rawExecutor = ExecutorUtils.getTargetExecutor(this.rawExecutor);
             final Configuration configuration = (Configuration) Reflections.getField("configuration", rawExecutor);
             batchExecutor = new BatchExecutorAdaptor(configuration, rawExecutor.getTransaction());
+            InterceptorChain interceptorChain =
+                    (InterceptorChain) Reflections.getField("interceptorChain", configuration);
+            batchExecutor = (BatchExecutorAdaptor) interceptorChain.pluginAll(batchExecutor);
         }
-        return batchExecutor.update(ms, rawExecutor);
+        return batchExecutor.update(ms, parameter);
     }
 
     @Override
@@ -56,7 +64,7 @@ public class FlexExecutor implements Executor {
     @Override
     public <E> List<E> query(final MappedStatement ms, final Object parameter, final RowBounds rowBounds,
                              final ResultHandler resultHandler) throws SQLException {
-        return query(ms, parameter, rowBounds, resultHandler);
+        return rawExecutor.query(ms, parameter, rowBounds, resultHandler);
     }
 
     @Override public List<BatchResult> flushStatements() throws SQLException {

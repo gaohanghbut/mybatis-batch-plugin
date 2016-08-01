@@ -1,9 +1,9 @@
 package cn.yxffcode.mybatisbatch;
 
 import cn.yxffcode.mybatisbatch.utils.BatchUtils;
+import cn.yxffcode.mybatisbatch.utils.ExecutorUtils;
 import cn.yxffcode.mybatisbatch.utils.Reflections;
 import org.apache.ibatis.executor.BatchExecutor;
-import org.apache.ibatis.executor.CachingExecutor;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
@@ -15,7 +15,6 @@ import org.apache.ibatis.session.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -48,7 +47,7 @@ public class BatchExecutorInterceptor implements Interceptor {
     }
 
     //create batch executor
-    final Executor targetExecutor = getTargetExecutor(invocation);
+    final Executor targetExecutor = ExecutorUtils.getTargetExecutor((Executor) invocation.getTarget());
     if (targetExecutor instanceof BatchExecutor) {
       return invocation.proceed();
     }
@@ -61,19 +60,6 @@ public class BatchExecutorInterceptor implements Interceptor {
       batchExecutor.flushStatements(true);
       throw e;
     }
-  }
-
-  private Executor getTargetExecutor(final Invocation invocation) {
-    Executor targetExecutor = (Executor) invocation.getTarget();
-    while (targetExecutor instanceof Proxy) {
-      targetExecutor = (Executor) Reflections.getField("target",
-              Proxy.getInvocationHandler(targetExecutor));
-    }
-    //取真正的executor
-    if (targetExecutor instanceof CachingExecutor) {
-      targetExecutor = (Executor) Reflections.getField("delegate", targetExecutor);
-    }
-    return targetExecutor;
   }
 
   @Override

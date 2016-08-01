@@ -1,4 +1,6 @@
 # mybatis-batch-plugin 
+
+## 简介
 用于优化mybatis批量插入/更新/删除的插件
 此插件基于BatchExecutor实现批量更新，只需要将需要更新的sql id(不包含命名空间)以batch开头，参数需要是Iterable或者数组即可。
 

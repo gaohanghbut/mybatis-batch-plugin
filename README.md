@@ -39,3 +39,4 @@ public interface UserDao {
     </property>
 </bean>
 ```
+FlexSqlSessionFactoryBuilder会创建FlexSqlSessionFactory,它使用FlexExecutor对原始的Executor做包装

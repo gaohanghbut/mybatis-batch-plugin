@@ -8,8 +8,8 @@ mybatis已有的批量更新比较麻烦，要么写动态sql，要么利用Batc
 插件实现,当需要使用批量时,不使用sqlsession中的executor,而是使用新的executor.
 第一种方式相对稍复杂一点,第二种方式需要将此插件配置成第一个Executor插件.
 
-## 使用方式 
-mybatis配置 
+## mybatis插件的使用方式 
+### mybatis配置 
 ```xml
 <plugin interceptor="cn.yxffcode.mybatisbatch.BatchExecutorInterceptor"></plugin>
 ```
@@ -23,6 +23,19 @@ public interface UserDao {
 }
 ```
 
-## 不足
+### 插件的不足
 此插件的实现原理是拦截Executor的update方法,然后将目标方法的调用改为创建新的BatchExecutor,然后执行批量的更新,
-但新的BatchExecutor对象没有经过InterceptorChain的包装,所以在此插件之前的Executor拦截器不会被执行,所以最好是将此插件配置在第一个,
+但新的BatchExecutor对象没有经过InterceptorChain的包装,所以在此插件之前的Executor拦截器不会被执行,所以最好是将此插件配置在第一个.
+
+## 使用新的SqlSessionFactory
+### Spring配置
+替换SqlSessionFactoryBean中的SqlSessionFactoryBuilder为FlexSqlSessionFactoryBuilder 
+```xml 
+<bean class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="dataSource" ref="dataSource"/>
+    <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    <property name="sqlSessionFactoryBuilder">
+        <bean class="cn.yxffcode.mybatisbatch.FlexSqlSessionFactoryBuilder"/>
+    </property>
+</bean>
+```

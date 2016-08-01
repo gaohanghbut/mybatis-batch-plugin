@@ -6,7 +6,6 @@ import cn.yxffcode.mybatisbatch.utils.ExecutorUtils;
 import cn.yxffcode.mybatisbatch.utils.Reflections;
 import com.google.common.base.Throwables;
 import org.apache.ibatis.cache.CacheKey;
-import org.apache.ibatis.executor.BatchExecutor;
 import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -40,15 +39,19 @@ public class FlexExecutor implements Executor {
   }
 
   @Override public int update(final MappedStatement ms, final Object parameter) throws SQLException {
-    if (!BatchUtils.shouldDoBatch(ms.getId()) || rawExecutor instanceof BatchExecutor) {
+    if (!BatchUtils.shouldDoBatch(ms.getId()) || rawExecutor instanceof BatchExecutorAdaptor) {
       return rawExecutor.update(ms, parameter);
     }
     if (batchExecutor == null) {
       final Executor rawExecutor = ExecutorUtils.getTargetExecutor(this.rawExecutor);
-      batchExecutor = new BatchExecutorAdaptor(configuration, rawExecutor.getTransaction());
-      InterceptorChain interceptorChain =
-              (InterceptorChain) Reflections.getField("interceptorChain", configuration);
-      batchExecutor = (BatchExecutorAdaptor) interceptorChain.pluginAll(batchExecutor);
+      if (rawExecutor instanceof BatchExecutorAdaptor) {
+        batchExecutor = (BatchExecutorAdaptor) rawExecutor;
+      } else {
+        batchExecutor = new BatchExecutorAdaptor(configuration, rawExecutor.getTransaction());
+        InterceptorChain interceptorChain =
+                (InterceptorChain) Reflections.getField("interceptorChain", configuration);
+        batchExecutor = (BatchExecutorAdaptor) interceptorChain.pluginAll(batchExecutor);
+      }
     }
     return batchExecutor.update(ms, parameter);
   }
